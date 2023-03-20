@@ -5,28 +5,28 @@
 
 #include "WebSocketClient.h"
 
-WebSocketClient::WebSocketClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
- : HttpClient(aClient, aServerName, aServerPort),
-   iTxStarted(false),
-   iRxSize(0)
+WebSocketClient::WebSocketClient(Client &aClient, const char *aServerName, uint16_t aServerPort)
+    : HttpClient(aClient, aServerName, aServerPort),
+      iTxStarted(false),
+      iRxSize(0)
 {
 }
 
-WebSocketClient::WebSocketClient(Client& aClient, const String& aServerName, uint16_t aServerPort) 
- : HttpClient(aClient, aServerName, aServerPort),
-   iTxStarted(false),
-   iRxSize(0)
+WebSocketClient::WebSocketClient(Client &aClient, const String &aServerName, uint16_t aServerPort)
+    : HttpClient(aClient, aServerName, aServerPort),
+      iTxStarted(false),
+      iRxSize(0)
 {
 }
 
-WebSocketClient::WebSocketClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
- : HttpClient(aClient, aServerAddress, aServerPort),
-   iTxStarted(false),
-   iRxSize(0)
+WebSocketClient::WebSocketClient(Client &aClient, const IPAddress &aServerAddress, uint16_t aServerPort)
+    : HttpClient(aClient, aServerAddress, aServerPort),
+      iTxStarted(false),
+      iRxSize(0)
 {
 }
 
-int WebSocketClient::begin(const char* aPath)
+int WebSocketClient::begin(const char *aPath, const char *protocol = NULL)
 {
     // start the GET request
     beginRequest();
@@ -44,13 +44,17 @@ int WebSocketClient::begin(const char* aPath)
             randomKey[i] = random(0x01, 0xff);
         }
         memset(base64RandomKey, 0x00, sizeof(base64RandomKey));
-        b64_encode(randomKey, sizeof(randomKey), (unsigned char*)base64RandomKey, sizeof(base64RandomKey));
+        b64_encode(randomKey, sizeof(randomKey), (unsigned char *)base64RandomKey, sizeof(base64RandomKey));
 
         // start the connection upgrade sequence
         sendHeader("Upgrade", "websocket");
         sendHeader("Connection", "Upgrade");
         sendHeader("Sec-WebSocket-Key", base64RandomKey);
         sendHeader("Sec-WebSocket-Version", "13");
+        if (protocol)
+        {
+            sendHeader("Sec-WebSocket-Protocol", protocol);
+        }
         endRequest();
 
         status = responseStatusCode();
@@ -67,9 +71,19 @@ int WebSocketClient::begin(const char* aPath)
     return (status == 101) ? 0 : status;
 }
 
-int WebSocketClient::begin(const String& aPath)
+int WebSocketClient::begin(const String &aPath, const String &protocol)
 {
-    return begin(aPath.c_str());
+    return begin(aPath, protocol);
+}
+
+int WebSocketClient::begin(const char *aPath)
+{
+    return begin(aPath, NULL);
+}
+
+int WebSocketClient::begin(const String &aPath)
+{
+    return begin(aPath.c_str(), NULL);
 }
 
 int WebSocketClient::beginMessage(int aType)
@@ -133,7 +147,8 @@ int WebSocketClient::endMessage()
     HttpClient::write(maskKey, sizeof(maskKey));
 
     // mask the data and send
-    for (int i = 0; i < (int)iTxSize; i++) {
+    for (int i = 0; i < (int)iTxSize; i++)
+    {
         iTxBuffer[i] ^= maskKey[i % sizeof(maskKey)];
     }
 
@@ -174,7 +189,7 @@ size_t WebSocketClient::write(const uint8_t *aBuffer, size_t aSize)
     memcpy(iTxBuffer + iTxSize, aBuffer, aSize);
 
     iTxSize += aSize;
-    
+
     return aSize;
 }
 
@@ -217,14 +232,14 @@ int WebSocketClient::parseMessage()
     }
     else
     {
-        iRxSize = ((uint64_t)HttpClient::read() << 56) | 
-                    ((uint64_t)HttpClient::read() << 48) | 
-                    ((uint64_t)HttpClient::read() << 40) | 
-                    ((uint64_t)HttpClient::read() << 32) | 
-                    ((uint64_t)HttpClient::read() << 24) | 
-                    ((uint64_t)HttpClient::read() << 16) | 
-                    ((uint64_t)HttpClient::read() << 8)  |
-                    (uint64_t)HttpClient::read(); 
+        iRxSize = ((uint64_t)HttpClient::read() << 56) |
+                  ((uint64_t)HttpClient::read() << 48) |
+                  ((uint64_t)HttpClient::read() << 40) |
+                  ((uint64_t)HttpClient::read() << 32) |
+                  ((uint64_t)HttpClient::read() << 24) |
+                  ((uint64_t)HttpClient::read() << 16) |
+                  ((uint64_t)HttpClient::read() << 8) |
+                  (uint64_t)HttpClient::read();
     }
 
     // read in the mask, if present
@@ -247,7 +262,7 @@ int WebSocketClient::parseMessage()
     else if (TYPE_PING == messageType())
     {
         beginMessage(TYPE_PONG);
-        while(available())
+        while (available())
         {
             write(read());
         }
@@ -365,7 +380,7 @@ int WebSocketClient::peek()
 
 void WebSocketClient::flushRx()
 {
-    while(available())
+    while (available())
     {
         read();
     }

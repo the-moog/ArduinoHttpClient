@@ -26,4 +26,3 @@ In normal usage, handles the outgoing request and Host header.  The returned sta
 Because it expects an object of type Client, you can use it with any of the networking classes that derive from that.  Which means it will work with WiFiClient, EthernetClient and GSMClient.
 
 See the examples for more detail on how the library is used.
-

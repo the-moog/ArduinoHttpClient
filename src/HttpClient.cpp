@@ -6,65 +6,65 @@
 #include "b64.h"
 
 // Initialize constants
-const char* HttpClient::kUserAgent = "Arduino/2.2.0";
-const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
-const char* HttpClient::kTransferEncodingChunked = HTTP_HEADER_TRANSFER_ENCODING ": " HTTP_HEADER_VALUE_CHUNKED;
+const char *HttpClient::kUserAgent = "Arduino/2.2.0";
+const char *HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
+const char *HttpClient::kTransferEncodingChunked = HTTP_HEADER_TRANSFER_ENCODING ": " HTTP_HEADER_VALUE_CHUNKED;
 
-HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
- : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
-   iConnectionClose(true), iSendDefaultRequestHeaders(true)
+HttpClient::HttpClient(Client &aClient, const char *aServerName, uint16_t aServerPort)
+    : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
+      iConnectionClose(true), iSendDefaultRequestHeaders(true)
 {
-  resetState();
+    resetState();
 }
 
-HttpClient::HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort)
- : HttpClient(aClient, aServerName.c_str(), aServerPort)
+HttpClient::HttpClient(Client &aClient, const String &aServerName, uint16_t aServerPort)
+    : HttpClient(aClient, aServerName.c_str(), aServerPort)
 {
 }
 
-HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
- : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
-   iConnectionClose(true), iSendDefaultRequestHeaders(true)
+HttpClient::HttpClient(Client &aClient, const IPAddress &aServerAddress, uint16_t aServerPort)
+    : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
+      iConnectionClose(true), iSendDefaultRequestHeaders(true)
 {
-  resetState();
+    resetState();
 }
 
 void HttpClient::resetState()
 {
-  iState = eIdle;
-  iStatusCode = 0;
-  iContentLength = kNoContentLengthHeader;
-  iBodyLengthConsumed = 0;
-  iContentLengthPtr = kContentLengthPrefix;
-  iTransferEncodingChunkedPtr = kTransferEncodingChunked;
-  iIsChunked = false;
-  iChunkLength = 0;
-  iHttpResponseTimeout = kHttpResponseTimeout;
+    iState = eIdle;
+    iStatusCode = 0;
+    iContentLength = kNoContentLengthHeader;
+    iBodyLengthConsumed = 0;
+    iContentLengthPtr = kContentLengthPrefix;
+    iTransferEncodingChunkedPtr = kTransferEncodingChunked;
+    iIsChunked = false;
+    iChunkLength = 0;
+    iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
 void HttpClient::stop()
 {
-  iClient->stop();
-  resetState();
+    iClient->stop();
+    resetState();
 }
 
 void HttpClient::connectionKeepAlive()
 {
-  iConnectionClose = false;
+    iConnectionClose = false;
 }
 
 void HttpClient::noDefaultRequestHeaders()
 {
-  iSendDefaultRequestHeaders = false;
+    iSendDefaultRequestHeaders = false;
 }
 
 void HttpClient::beginRequest()
 {
-  iState = eRequestStarted;
+    iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod, 
-                                const char* aContentType, int aContentLength, const byte aBody[])
+int HttpClient::startRequest(const char *aURLPath, const char *aHttpMethod,
+                             const char *aContentType, int aContentLength, const byte aBody[])
 {
     if (iState == eReadingBody || iState == eReadingChunkLength || iState == eReadingBodyChunk)
     {
@@ -100,7 +100,7 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
                 Serial.println("Connection failed");
 #endif
                 return HTTP_ERROR_CONNECTION_FAILED;
-            }    
+            }
         }
     }
     else
@@ -136,14 +136,14 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
 
         if (hasBody)
         {
-                write(aBody, aContentLength);
+            write(aBody, aContentLength);
         }
     }
 
     return ret;
 }
 
-int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod)
+int HttpClient::sendInitialHeaders(const char *aURLPath, const char *aHttpMethod)
 {
 #ifdef LOGGING
     Serial.println("Connected");
@@ -163,8 +163,8 @@ int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod
             iClient->print(iServerName);
             if (iServerPort != kHttpPort)
             {
-              iClient->print(":");
-              iClient->print(iServerPort);
+                iClient->print(":");
+                iClient->print(iServerPort);
             }
             iClient->println();
         }
@@ -184,26 +184,26 @@ int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod
     return HTTP_SUCCESS;
 }
 
-void HttpClient::sendHeader(const char* aHeader)
+void HttpClient::sendHeader(const char *aHeader)
 {
     iClient->println(aHeader);
 }
 
-void HttpClient::sendHeader(const char* aHeaderName, const char* aHeaderValue)
+void HttpClient::sendHeader(const char *aHeaderName, const char *aHeaderValue)
 {
     iClient->print(aHeaderName);
     iClient->print(": ");
     iClient->println(aHeaderValue);
 }
 
-void HttpClient::sendHeader(const char* aHeaderName, const int aHeaderValue)
+void HttpClient::sendHeader(const char *aHeaderName, const int aHeaderValue)
 {
     iClient->print(aHeaderName);
     iClient->print(": ");
     iClient->println(aHeaderValue);
 }
 
-void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
+void HttpClient::sendBasicAuth(const char *aUser, const char *aPassword)
 {
     // Send the initial part of this header line
     iClient->print("Authorization: Basic ");
@@ -219,7 +219,7 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
     int userLen = strlen(aUser);
     int passwordLen = strlen(aPassword);
     int inputOffset = 0;
-    for (int i = 0; i < (userLen+1+passwordLen); i++)
+    for (int i = 0; i < (userLen + 1 + passwordLen); i++)
     {
         // Copy the relevant input byte into the input
         if (i < userLen)
@@ -232,19 +232,19 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
         }
         else
         {
-            input[inputOffset++] = aPassword[i-(userLen+1)];
+            input[inputOffset++] = aPassword[i - (userLen + 1)];
         }
         // See if we've got a chunk to encode
-        if ( (inputOffset == 3) || (i == userLen+passwordLen) )
+        if ((inputOffset == 3) || (i == userLen + passwordLen))
         {
             // We've either got to a 3-byte boundary, or we've reached then end
             b64_encode(input, inputOffset, output, 4);
             // NUL-terminate the output string
             output[4] = '\0';
             // And write it out
-            iClient->print((char*)output);
-// FIXME We might want to fill output with '=' characters if b64_encode doesn't
-// FIXME do it for us when we're encoding the final chunk
+            iClient->print((char *)output);
+            // FIXME We might want to fill output with '=' characters if b64_encode doesn't
+            // FIXME do it for us when we're encoding the final chunk
             inputOffset = 0;
         }
     }
@@ -281,112 +281,112 @@ void HttpClient::beginBody()
     // else the end of headers has already been sent, so nothing to do here
 }
 
-int HttpClient::get(const char* aURLPath)
+int HttpClient::get(const char *aURLPath)
 {
     return startRequest(aURLPath, HTTP_METHOD_GET);
 }
 
-int HttpClient::get(const String& aURLPath)
+int HttpClient::get(const String &aURLPath)
 {
     return get(aURLPath.c_str());
 }
 
-int HttpClient::post(const char* aURLPath)
+int HttpClient::post(const char *aURLPath)
 {
     return startRequest(aURLPath, HTTP_METHOD_POST);
 }
 
-int HttpClient::post(const String& aURLPath)
+int HttpClient::post(const String &aURLPath)
 {
     return post(aURLPath.c_str());
 }
 
-int HttpClient::post(const char* aURLPath, const char* aContentType, const char* aBody)
+int HttpClient::post(const char *aURLPath, const char *aContentType, const char *aBody)
 {
-    return post(aURLPath, aContentType, strlen(aBody), (const byte*)aBody);
+    return post(aURLPath, aContentType, strlen(aBody), (const byte *)aBody);
 }
 
-int HttpClient::post(const String& aURLPath, const String& aContentType, const String& aBody)
+int HttpClient::post(const String &aURLPath, const String &aContentType, const String &aBody)
 {
-    return post(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+    return post(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte *)aBody.c_str());
 }
 
-int HttpClient::post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+int HttpClient::post(const char *aURLPath, const char *aContentType, int aContentLength, const byte aBody[])
 {
     return startRequest(aURLPath, HTTP_METHOD_POST, aContentType, aContentLength, aBody);
 }
 
-int HttpClient::put(const char* aURLPath)
+int HttpClient::put(const char *aURLPath)
 {
     return startRequest(aURLPath, HTTP_METHOD_PUT);
 }
 
-int HttpClient::put(const String& aURLPath)
+int HttpClient::put(const String &aURLPath)
 {
     return put(aURLPath.c_str());
 }
 
-int HttpClient::put(const char* aURLPath, const char* aContentType, const char* aBody)
+int HttpClient::put(const char *aURLPath, const char *aContentType, const char *aBody)
 {
-    return put(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+    return put(aURLPath, aContentType, strlen(aBody), (const byte *)aBody);
 }
 
-int HttpClient::put(const String& aURLPath, const String& aContentType, const String& aBody)
+int HttpClient::put(const String &aURLPath, const String &aContentType, const String &aBody)
 {
-    return put(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+    return put(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte *)aBody.c_str());
 }
 
-int HttpClient::put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+int HttpClient::put(const char *aURLPath, const char *aContentType, int aContentLength, const byte aBody[])
 {
     return startRequest(aURLPath, HTTP_METHOD_PUT, aContentType, aContentLength, aBody);
 }
 
-int HttpClient::patch(const char* aURLPath)
+int HttpClient::patch(const char *aURLPath)
 {
     return startRequest(aURLPath, HTTP_METHOD_PATCH);
 }
 
-int HttpClient::patch(const String& aURLPath)
+int HttpClient::patch(const String &aURLPath)
 {
     return patch(aURLPath.c_str());
 }
 
-int HttpClient::patch(const char* aURLPath, const char* aContentType, const char* aBody)
+int HttpClient::patch(const char *aURLPath, const char *aContentType, const char *aBody)
 {
-    return patch(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+    return patch(aURLPath, aContentType, strlen(aBody), (const byte *)aBody);
 }
 
-int HttpClient::patch(const String& aURLPath, const String& aContentType, const String& aBody)
+int HttpClient::patch(const String &aURLPath, const String &aContentType, const String &aBody)
 {
-    return patch(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+    return patch(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte *)aBody.c_str());
 }
 
-int HttpClient::patch(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+int HttpClient::patch(const char *aURLPath, const char *aContentType, int aContentLength, const byte aBody[])
 {
     return startRequest(aURLPath, HTTP_METHOD_PATCH, aContentType, aContentLength, aBody);
 }
 
-int HttpClient::del(const char* aURLPath)
+int HttpClient::del(const char *aURLPath)
 {
     return startRequest(aURLPath, HTTP_METHOD_DELETE);
 }
 
-int HttpClient::del(const String& aURLPath)
+int HttpClient::del(const String &aURLPath)
 {
     return del(aURLPath.c_str());
 }
 
-int HttpClient::del(const char* aURLPath, const char* aContentType, const char* aBody)
+int HttpClient::del(const char *aURLPath, const char *aContentType, const char *aBody)
 {
-    return del(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+    return del(aURLPath, aContentType, strlen(aBody), (const byte *)aBody);
 }
 
-int HttpClient::del(const String& aURLPath, const String& aContentType, const String& aBody)
+int HttpClient::del(const String &aURLPath, const String &aContentType, const String &aBody)
 {
-    return del(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+    return del(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte *)aBody.c_str());
 }
 
-int HttpClient::del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+int HttpClient::del(const char *aURLPath, const char *aContentType, int aContentLength, const byte aBody[])
 {
     return startRequest(aURLPath, HTTP_METHOD_DELETE, aContentType, aContentLength, aBody);
 }
@@ -413,22 +413,22 @@ int HttpClient::responseStatusCode()
 
         unsigned long timeoutStart = millis();
         // Psuedo-regexp we're expecting before the status-code
-        const char* statusPrefix = "HTTP/*.* ";
-        const char* statusPtr = statusPrefix;
+        const char *statusPrefix = "HTTP/*.* ";
+        const char *statusPtr = statusPrefix;
         // Whilst we haven't timed out & haven't reached the end of the headers
-        while ((c != '\n') && 
-               ( (millis() - timeoutStart) < iHttpResponseTimeout ))
+        while ((c != '\n') &&
+               ((millis() - timeoutStart) < iHttpResponseTimeout))
         {
             if (available())
             {
                 c = read();
                 if (c != -1)
                 {
-                    switch(iState)
+                    switch (iState)
                     {
                     case eRequestSent:
                         // We haven't reached the status code yet
-                        if ( (*statusPtr == '*') || (*statusPtr == c) )
+                        if ((*statusPtr == '*') || (*statusPtr == c))
                         {
                             // This character matches, just move along
                             statusPtr++;
@@ -448,7 +448,7 @@ int HttpClient::responseStatusCode()
                         {
                             // This assumes we won't get more than the 3 digits we
                             // want
-                            iStatusCode = iStatusCode*10 + (c - '0');
+                            iStatusCode = iStatusCode * 10 + (c - '0');
                         }
                         else
                         {
@@ -476,7 +476,7 @@ int HttpClient::responseStatusCode()
                 delay(kHttpWaitForDataDelay);
             }
         }
-        if ( (c == '\n') && (iStatusCode < 200 && iStatusCode != 101) )
+        if ((c == '\n') && (iStatusCode < 200 && iStatusCode != 101))
         {
             // We've reached the end of an informational status line
             c = '\0'; // Clear c so we'll go back into the data reading loop
@@ -484,9 +484,9 @@ int HttpClient::responseStatusCode()
     }
     // If we've read a status code successfully but it's informational (1xx)
     // loop back to the start
-    while ( (iState == eStatusCodeRead) && (iStatusCode < 200 && iStatusCode != 101) );
+    while ((iState == eStatusCodeRead) && (iStatusCode < 200 && iStatusCode != 101));
 
-    if ( (c == '\n') && (iState == eStatusCodeRead) )
+    if ((c == '\n') && (iState == eStatusCodeRead))
     {
         // We've read the status-line successfully
         return iStatusCode;
@@ -509,8 +509,8 @@ int HttpClient::skipResponseHeaders()
     // Just keep reading until we finish reading the headers or time out
     unsigned long timeoutStart = millis();
     // Whilst we haven't timed out & haven't reached the end of the headers
-    while ((!endOfHeadersReached()) && 
-           ( (millis() - timeoutStart) < iHttpResponseTimeout ))
+    while ((!endOfHeadersReached()) &&
+           ((millis() - timeoutStart) < iHttpResponseTimeout))
     {
         if (available())
         {
@@ -544,7 +544,7 @@ bool HttpClient::endOfHeadersReached()
 
 int HttpClient::contentLength()
 {
-    // skip the response headers, if they haven't been read already 
+    // skip the response headers, if they haven't been read already
     if (!endOfHeadersReached())
     {
         skipResponseHeaders();
@@ -561,9 +561,10 @@ String HttpClient::responseBody()
     if (bodyLength > 0)
     {
         // try to reserve bodyLength bytes
-        if (response.reserve(bodyLength) == 0) {
+        if (response.reserve(bodyLength) == 0)
+        {
             // String reserve failed
-            return String((const char*)NULL);
+            return String((const char *)NULL);
         }
     }
 
@@ -575,20 +576,23 @@ String HttpClient::responseBody()
     {
         int c = timedRead();
 
-        if (c == -1) {
+        if (c == -1)
+        {
             // read timed out, done
             break;
         }
 
-        if (!response.concat((char)c)) {
+        if (!response.concat((char)c))
+        {
             // adding char failed
-            return String((const char*)NULL);
+            return String((const char *)NULL);
         }
     }
 
-    if (bodyLength > 0 && (unsigned int)bodyLength != response.length()) {
+    if (bodyLength > 0 && (unsigned int)bodyLength != response.length())
+    {
         // failure, we did not read in response content length bytes
-        return String((const char*)NULL);
+        return String((const char *)NULL);
     }
 
     return response;
@@ -634,12 +638,12 @@ int HttpClient::available()
     {
         iState = eReadingChunkLength;
     }
-    
+
     if (iState == eReadingChunkLength)
     {
         return 0;
     }
-    
+
     int clientAvailable = iClient->available();
 
     if (iState == eReadingBodyChunk)
@@ -651,7 +655,6 @@ int HttpClient::available()
         return clientAvailable;
     }
 }
-
 
 int HttpClient::read()
 {
@@ -699,7 +702,7 @@ bool HttpClient::headerAvailable()
             {
                 // end of the line, all done
                 break;
-            } 
+            }
             else
             {
                 // ignore any CR or LF characters
@@ -747,7 +750,7 @@ String HttpClient::readHeaderValue()
 
 int HttpClient::read(uint8_t *buf, size_t size)
 {
-    int ret =iClient->read(buf, size);
+    int ret = iClient->read(buf, size);
     if (endOfHeadersReached() && iContentLength > 0)
     {
         // We're outputting the body now and we've seen a Content-Length header
@@ -773,7 +776,7 @@ int HttpClient::readHeader()
 
     // Whilst reading out the headers to whoever wants them, we'll keep an
     // eye out for the "Content-Length" header
-    switch(iState)
+    switch (iState)
     {
     case eStatusCodeRead:
         // We're at the start of a line, or somewhere in the middle of reading
@@ -818,7 +821,7 @@ int HttpClient::readHeader()
     case eReadingContentLength:
         if (isdigit(c))
         {
-            iContentLength = iContentLength*10 + (c - '0');
+            iContentLength = iContentLength * 10 + (c - '0');
         }
         else
         {
@@ -847,7 +850,7 @@ int HttpClient::readHeader()
         break;
     };
 
-    if ( (c == '\n') && !endOfHeadersReached() )
+    if ((c == '\n') && !endOfHeadersReached())
     {
         // We've got to the end of this line, start processing again
         iState = eStatusCodeRead;
@@ -857,6 +860,3 @@ int HttpClient::readHeader()
     // And return the character read to whoever wants it
     return c;
 }
-
-
-
